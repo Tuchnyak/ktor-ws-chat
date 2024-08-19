@@ -53,10 +53,15 @@
             font-size: 0.8em;
             color: #aaa;
         }
+
+        .my-message {
+            background-color: #c7d4f9;
+        }
     </style>
     <script>
         let serverURL = "ws://0.0.0.0:8080/chat";  // Replace with your server URL
         let socket;
+        let myUsername;
 
         function setupSocket() {
             socket = new WebSocket(serverURL);
@@ -75,6 +80,10 @@
             const chatMessageElement = document.createElement("div");
             chatMessageElement.classList.add("chat-message");
 
+            if (message.userName === myUsername) {
+                chatMessageElement.classList.add("my-message");
+            }
+
             const usernameElement = document.createElement("span");
             usernameElement.classList.add("chat-message-username");
             usernameElement.textContent = message.userName + ": ";
@@ -82,13 +91,16 @@
             const messageTextElement = document.createElement("span");
             messageTextElement.textContent = message.message;
 
-            const timestampElement = document.createElement("span");
+            const timestampElement = document.createElement("div");
             timestampElement.classList.add("chat-message-timestamp");
             timestampElement.textContent = message.timestamp.toString();
 
             chatMessageElement.appendChild(usernameElement);
             chatMessageElement.appendChild(messageTextElement);
-            chatMessageElement.appendChild(timestampElement);
+
+            const timestampRow = document.createElement("div");
+            timestampRow.appendChild(timestampElement);
+            chatMessageElement.appendChild(timestampRow);
 
             const chatMessagesElement = document.getElementById("chat-messages");
             chatMessagesElement.appendChild(chatMessageElement);
@@ -97,11 +109,13 @@
 
         function sendChatMessage() {
             const usernameInput = document.getElementById("username");
+            myUsername = usernameInput.value;
+
             const messageInput = document.getElementById("message");
 
             const message = {
                 message: messageInput.value,
-                userName: usernameInput.value,
+                userName: myUsername,
                 timestamp: new Date().toISOString()
             };
 
@@ -118,7 +132,29 @@
             console.log("Web socket connection closed");
         }
 
-        window.onload = setupSocket;
+        function getUserName() {
+            const funnyUsernames = [
+                "CaptainObvious",
+                "TheCoffeeAddict",
+                "NightOwl99",
+                "PizzaLover3000",
+                "CodingNinja",
+                "LazySunday",
+                "AdventureSeeker",
+                "BookWorm4Life",
+                "GadgetGuru",
+                "DreamWeaver"
+              ];
+              const randomIndex = Math.floor(Math.random() * funnyUsernames.length);
+
+              return funnyUsernames[randomIndex];
+        }
+
+        window.onload = () => {
+            myUsername = getUserName();
+            document.getElementById("username").value = myUsername;
+            setupSocket();
+        };
     </script>
 </head>
 <body>
