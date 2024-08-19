@@ -1,7 +1,139 @@
-<html>
- <head>
- </head>
- <body>
-   <h1>Hello Ktor!</h1>
- </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat App</title>
+    <style>
+        body {
+            font-family: serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chat-container {
+            display: flex;
+            width: 100%;
+        }
+
+        .chat-input {
+            width: 33%;
+            padding: 10px;
+            border-right: 1px solid #ddd;
+        }
+
+        .chat-messages {
+            width: 66%;
+            padding: 10px;
+            overflow-y: scroll;
+            height: calc(100vh - 100px);
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .chat-message-username {
+            font-weight: bold;
+        }
+
+        .chat-message-timestamp {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+    </style>
+    <script>
+        let serverURL = "ws://0.0.0.0:8080/chat";  // Replace with your server URL
+        let socket;
+
+        function setupSocket() {
+            socket = new WebSocket(serverURL);
+
+            socket.onopen = logOpenToConsole;
+            socket.onclose = logCloseToConsole;
+            socket.onmessage = handleMessage;
+        }
+
+        function handleMessage(event) {
+            const message = JSON.parse(event.data);
+            displayChatMessage(message);
+        }
+
+        function displayChatMessage(message) {
+            const chatMessageElement = document.createElement("div");
+            chatMessageElement.classList.add("chat-message");
+
+            const usernameElement = document.createElement("span");
+            usernameElement.classList.add("chat-message-username");
+            usernameElement.textContent = message.userName + ": ";
+
+            const messageTextElement = document.createElement("span");
+            messageTextElement.textContent = message.message;
+
+            const timestampElement = document.createElement("span");
+            timestampElement.classList.add("chat-message-timestamp");
+            timestampElement.textContent = message.timestamp.toString();
+
+            chatMessageElement.appendChild(usernameElement);
+            chatMessageElement.appendChild(messageTextElement);
+            chatMessageElement.appendChild(timestampElement);
+
+            const chatMessagesElement = document.getElementById("chat-messages");
+            chatMessagesElement.appendChild(chatMessageElement);
+            chatMessagesElement.scrollTop = chatMessagesElement.scrollHeight; // Scroll to bottom
+        }
+
+        function sendChatMessage() {
+            const usernameInput = document.getElementById("username");
+            const messageInput = document.getElementById("message");
+
+            const message = {
+                message: messageInput.value,
+                userName: usernameInput.value,
+                timestamp: new Date().toISOString()
+            };
+
+            messageInput.value = ""; // Clear message input
+
+            socket.send(JSON.stringify(message));
+        }
+
+        function logOpenToConsole() {
+            console.log("Web socket connection opened");
+        }
+
+        function logCloseToConsole() {
+            console.log("Web socket connection closed");
+        }
+
+        window.onload = setupSocket;
+    </script>
+</head>
+<body>
+<h1>Simple Chat App</h1>
+<div class="chat-container">
+    <div class="chat-input">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required>
+        <br>
+        <label for="message">Message:</label>
+        <br>
+        <textarea id="message" rows="5" required></textarea>
+        <button onclick="sendChatMessage()">Send</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+</div>
+</body>
 </html>
