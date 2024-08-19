@@ -1,0 +1,10 @@
+ktor:
+    application:
+        modules:
+            - ru.raif.chat.ApplicationKt.module
+    deployment:
+        port: 8080
+chat:
+    cache:
+        expiration:
+            seconds: 30
